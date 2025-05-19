@@ -1,6 +1,8 @@
 const express = require('express');
-const bodyParser = require('body-parser')
-const sequelize = require('./database')
+const bodyParser = require('body-parser');
+const Usuario = require('./models/usuario');
+const Producto = require('./models/producto');
+const sequelize = require('./database');
 
 const app = express();
 
@@ -16,6 +18,33 @@ app.post('/usuario', async(req,res) =>{
     try{
         const nuevoUsuario = await Usuario.create({nombre, email});
         res.status(200).json(nuevoUsuario);
+    } catch (error){
+        res.status(400).json({error: error.message });
+    }
+});
+
+app.get('/usuarios/:id/productos', async (req, res) => {
+    const { id } = req.params;
+    try {
+      const usuario = await Usuario.findByPk(id, {
+        include: Producto 
+      });
+  
+      if (!usuario) {
+        return res.status(404).json({ error: 'Usuario no encontrado' });
+      }
+  
+      res.status(200).json(usuario.Productos);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+app.get('/usuarios', async (req,res) => {
+    try {
+        const usuarios = await Usuario.findAll();
+
+        res.status(200).json(usuarios);
     } catch (error){
         res.status(400).json({error: error.message });
     }
